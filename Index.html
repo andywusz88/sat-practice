@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>SAT Word Fill-in-the-Blank Practice</title>
+<style>
+  body {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background: #f7f8fa;
+  }
+  .card {
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  button {
+    padding: 10px 16px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  button:hover {
+    background: #1d4ed8;
+  }
+  button.active {
+    background: #1e40af;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3);
+  }
+  .btn-red {
+    background: #dc2626;
+  }
+  .btn-red:hover {
+    background: #b91c1c;
+  }
+  .btn-gray {
+    background: #6b7280;
+  }
+  .btn-green {
+    background: #16a34a;
+  }
+  .btn-green:hover {
+    background: #15803d;
+  }
+  .question-item {
+    margin: 20px 0;
+    padding: 15px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+  }
+  .question-text {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .option {
+    margin: 8px 0;
+    font-size: 14px;
+  }
+  .result-area {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    display: none;
+    background: #f9fafb;
+    border: 1px solid #eee;
+  }
+  .wrong-words-summary {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+  .wrong-word-item {
+    margin: 6px 0;
+    font-size: 14px;
+  }
+  .wrong-word {
+    font-weight: bold;
+    color: #dc2626;
+  }
+  /* 错题本独立卡片样式 */
+  .error-book-card {
+    display: none; /* 默认隐藏 */
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  /* 已考过单词独立卡片 */
+  .tested-words-card {
+    display: none; /* 默认隐藏 */
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+  }
+  .word-list {
+    margin-top: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .word-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .word-item:last-child {
+    border-bottom: none;
+  }
+  .word-name {
+    font-weight: bold;
+    font-size: 15px;
+  }
+  .word-def {
+    flex: 1;
+    margin-left: 15px;
+    font-size: 14px;
+    color: #4b5563;
+  }
+  .error-book-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .error-book-tab {
+    padding: 8px 16px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    cursor: pointer;
+    background: #f3f4f6;
+  }
+  .error-book-tab.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+  }
+  .error-book-content {
+    display: none;
+  }
+  .error-book-content.active {
+    display: block;
+  }
+  .correct-answer {
+    color: #166534;
+    font-weight: bold;
+  }
+  .wrong-answer {
+    color: #dc2626;
+    font-weight: bold;
+  }
+  .explanation {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+  .total-result {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .score-text {
+    color: #2563eb;
+    font-weight: bold;
+  }
+  .empty-tip {
+    color: #6b7280;
+    font-style: italic;
+    margin: 15px 0;
+  }
+  .error-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  .error-word-group {
+    margin: 12px 0;
+    padding: 12px;
+    border: 1px solid #fecdd3;
+    border-radius: 8px;
+    background: #fff5f5;
+  }
+  .error-word {
+    font-weight: bold;
+    color: #dc2626;
+  }
+  .error-date-item {
+    margin: 6px 0 6px 16px;
+    padding-left: 8px;
+    border-left: 2px solid #dc2626;
+  }
+  .sync-status {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #166534;
+    padding: 8px;
+    border-radius: 4px;
+    background: #f0fdf4;
+  }
+  .word-count {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+  <!-- 答题主卡片 -->
+  <div class="card">
+    <h2>SAT Word Fill-in-the-Blank Practice (10 Questions)</h2>
+    <button id="generateBtn">Generate 10 New Questions</button>
+    <button id="showTestedWordsBtn">View Tested Words</button>
+    <button id="showErrorBookBtn">View Error Book</button>
+    <button id="clearErrorBtn" class="btn-red">Clear All Error Book</button>
+    
+    <!-- 本地存储状态提示 -->
+    <div class="sync-status" id="syncStatus">✅ Using local storage (all data saved locally)</div>
+
+    <div id="questionsContainer"></div>
+    
+    <button id="submitAllBtn" style="display:none; margin-top: 20px;">Submit All Answers</button>
+    
+    <!-- 答题结果区域（仅显示答题评分） -->
+    <div id="totalResultArea" class="result-area"></div>
+  </div>
+
+  <!-- 已考过单词独立卡片 -->
+  <div class="tested-words-card" id="testedWordsContainer">
+    <h3>Tested Words History</h3>
+    <div class="word-count" id="testedWordCount">Total tested words: 0</div>
+    <button id="exportTestedWordsBtn" class="btn-green">Export to XLS</button>
+    <div class="word-list" id="testedWordsList"></div>
+  </div>
+
+  <!-- 错题本独立卡片（和答题区域完全分开） -->
+  <div class="error-book-card" id="errorBookContainer">
+    <h3>Error Book (Local Storage)</h3>
+    <div class="error-book-tabs">
+      <div class="error-book-tab active" data-tab="today">Today's Errors</div>
+      <div class="error-book-tab" data-tab="history">History Errors (Group by Word)</div>
+    </div>
+
+    <div class="error-book-content active" id="todayErrorBook">
+      <h4>Today's Error Words (<span id="todayErrorCount">0</span>)</h4>
+      <div id="todayErrorList"></div>
+    </div>
+
+    <div class="error-book-content" id="historyErrorBook">
+      <h4>History Errors (Group by Word) (<span id="historyErrorCount">0</span>)</h4>
+      <div id="historyErrorList"></div>
+      <button class="btn-gray" id="clearHistoryBtn" style="margin-top:12px;">Clear History Errors</button>
+    </div>
+  </div>
+
+<script>
+// 全局变量
+let batchQuestions = [];
+let errorRecords = [];
+let testedWords = new Set(); // 存储已考过的单词（去重）
+const TODAY = new Date().toLocaleDateString('en-US');
+const topButtons = [
+  document.getElementById('generateBtn'),
+  document.getElementById('showTestedWordsBtn'),
+  document.getElementById('showErrorBookBtn')
+];
+
+// 重置顶部按钮样式 + 隐藏所有功能卡片
+function resetUIState() {
+  // 重置按钮样式
+  topButtons.forEach(btn => {
+    if (btn) btn.classList.remove('active');
+  });
+  // 隐藏所有功能卡片
+  document.getElementById('errorBookContainer').style.display = 'none';
+  document.getElementById('testedWordsContainer').style.display = 'none';
+  // 清空答题结果（保留题目区域，仅隐藏结果）
+  document.getElementById('totalResultArea').style.display = 'none';
+}
+
+// 从本地存储加载所有数据
+function loadAllData() {
+  // 加载错题记录
+  const savedErrors = localStorage.getItem('satWordErrorRecords');
+  errorRecords = savedErrors ? JSON.parse(savedErrors) : [];
+  
+  // 加载已考过的单词
+  const savedTested = localStorage.getItem('satTestedWords');
+  if (savedTested) {
+    testedWords = new Set(JSON.parse(savedTested));
+  }
+  
+  // 渲染数据
+  renderTodayErrorBook();
+  renderHistoryErrorBook();
+  renderTestedWords();
+}
+
+// 保存已考过的单词到本地存储
+function saveTestedWords() {
+  localStorage.setItem('satTestedWords', JSON.stringify(Array.from(testedWords)));
+  renderTestedWords();
+}
+
+// 保存错题记录到本地存储
+function saveErrorRecords() {
+  localStorage.setItem('satWordErrorRecords', JSON.stringify(errorRecords));
+  renderTodayErrorBook();
+  renderHistoryErrorBook();
+}
+
+// 新增错题记录
+function addErrorRecord(word, definition, sentence) {
+  const now = new Date();
+  errorRecords.push({
+    word, definition, sentence,
+    date: now.toLocaleDateString('en-US'),
+    time: now.toLocaleTimeString('en-US')
+  });
+  saveErrorRecords();
+}
+
+// 渲染当天错题本
+function renderTodayErrorBook() {
+  const today = errorRecords.filter(r => r.date === TODAY);
+  document.getElementById('todayErrorCount').textContent = today.length;
+  const el = document.getElementById('todayErrorList');
+  if (today.length === 0) {
+    el.innerHTML = '<p class="empty-tip">No errors today.</p>';
+    return;
+  }
+  el.innerHTML = today.map((r,i) => `
+    <div class="error-item">
+      <p><span class="error-word">${i+1}. ${r.word}</span></p>
+      <p>${r.definition}</p>
+      <p><small>${r.date} ${r.time}</small></p>
+    </div>
+  `).join('');
+}
+
+// 渲染历史错题本
+function renderHistoryErrorBook() {
+  const groups = {};
+  errorRecords.forEach(r => {
+    if (!groups[r.word]) groups[r.word] = [];
+    groups[r.word].push(r);
+  });
+  const keys = Object.keys(groups);
+  document.getElementById('historyErrorCount').textContent = keys.length;
+  const el = document.getElementById('historyErrorList');
+  if (keys.length === 0) {
+    el.innerHTML = '<p class="empty-tip">No history errors.</p>';
+    return;
+  }
+  el.innerHTML = keys.map(word => {
+    const list = groups[word];
+    return `
+      <div class="error-word-group">
+        <p class="error-word">${word} (×${list.length})</p>
+        ${list.map(r => `
+          <div class="error-date-item">
+            <p>${r.date} ${r.time}</p>
+            <p>${r.sentence}</p>
+            <p>${r.definition}</p>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+// 渲染已考过的单词列表
+function renderTestedWords() {
+  const wordList = Array.from(testedWords);
+  document.getElementById('testedWordCount').textContent = `Total tested words: ${wordList.length}`;
+  const el = document.getElementById('testedWordsList');
+  
+  if (wordList.length === 0) {
+    el.innerHTML = '<p class="empty-tip">No words have been tested yet.</p>';
+    return;
+  }
+  
+  // 按字母排序 + 匹配单词库中的定义
+  wordList.sort();
+  el.innerHTML = wordList.map(word => {
+    const wordData = satWordBank.find(item => item.word === word);
+    const definition = wordData ? wordData.definition : 'No definition available';
+    return `
+      <div class="word-item">
+        <span class="word-name">${word}</span>
+        <span class="word-def">${definition}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// 导出已考过单词为XLS文件
+function exportTestedWordsToXLS() {
+  const wordList = Array.from(testedWords).sort();
+  if (wordList.length === 0) {
+    alert('No tested words to export!');
+    return;
+  }
+  
+  // 构建XLS内容（TSV格式，Excel可直接识别）
+  let csvContent = "Word\tDefinition\n"; // 制表符分隔，模拟XLS
+  wordList.forEach(word => {
+    const wordData = satWordBank.find(item => item.word === word);
+    const definition = wordData ? wordData.definition.replace(/\t/g, ' ') : 'No definition available';
+    csvContent += `${word}\t${definition}\n`;
+  });
+  
+  // 创建下载链接
+  const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const date = new Date().toISOString().split('T')[0];
+  a.download = `SAT_Tested_Words_${date}.xls`;
+  document.body.appendChild(a);
+  a.click();
+  
+  // 清理
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 0);
+  
+  alert(`Successfully exported ${wordList.length} words to XLS file!`);
+}
+
+// 生成题目逻辑（新增：记录已考过的单词）
+document.getElementById('generateBtn').addEventListener('click', () => {
+  // 重置UI状态，只聚焦答题功能
+  resetUIState();
+  // 标记当前激活的按钮
+  document.getElementById('generateBtn').classList.add('active');
+  
+  batchQuestions = [];
+  document.getElementById('questionsContainer').innerHTML = '';
+  document.getElementById('submitAllBtn').style.display = 'block';
+
+  const shuffled = [...satWordBank].sort(() => 0.5 - Math.random()).slice(0, 10);
+  shuffled.forEach((w, idx) => {
+    // 记录已考过的单词（自动去重）
+    testedWords.add(w.word);
+    const opts = [w.word, ...w.distractors].sort(() => 0.5 - Math.random());
+    batchQuestions.push({
+      id: `q${idx+1}`,
+      word: w.word,
+      definition: w.definition,
+      sentence: w.sentence,
+      options: opts,
+      correctAnswer: w.word
+    });
+    document.getElementById('questionsContainer').innerHTML += `
+      <div class="question-item" id="q${idx+1}">
+        <h4>Question ${idx+1}:</h4>
+        <p class="question-text">${w.sentence}</p>
+        <div class="options">
+          ${opts.map((o,i) => `
+            <div class="option">
+              <input type="radio" name="answer_${idx+1}" value="${o}">
+              <label>${String.fromCharCode(65+i)}) ${o}</label>
+            </div>
+          `).join('')}
+        </div>
+        <div id="result_${idx+1}" style="margin-top:8px;display:none"></div>
+      </div>
+    `;
+  });
+  
+  // 保存已考过的单词
+  saveTestedWords();
+});
+
+// 提交答案逻辑
+document.getElementById('submitAllBtn').addEventListener('click', () => {
+  let unanswered = [];
+  batchQuestions.forEach((_, i) => {
+    if (!document.querySelector(`input[name="answer_${i+1}"]:checked`)) {
+      unanswered.push(i+1);
+    }
+  });
+  if (unanswered.length > 0) {
+    alert(`Cannot submit! Unanswered: ${unanswered.join(', ')}`);
+    document.getElementById(`q${unanswered[0]}`).scrollIntoView({behavior:'smooth'});
+    return;
+  }
+
+  let correct = 0;
+  let wrongWordsThisSet = [];
+
+  batchQuestions.forEach((q, i) => {
+    const sel = document.querySelector(`input[name="answer_${i+1}"]:checked`);
+    const res = document.getElementById(`result_${i+1}`);
+    res.style.display = 'block';
+    const user = sel.value;
+
+    if (user === q.correctAnswer) {
+      correct++;
+      res.innerHTML = `<p class="correct-answer">Correct ✅</p>`;
+    } else {
+      res.innerHTML = `
+        <p class="wrong-answer">Incorrect ❌</p>
+        <p>Correct: ${q.correctAnswer}</p>
+        <p class="explanation">${q.definition}</p>
+      `;
+      wrongWordsThisSet.push({
+        word: q.word,
+        definition: q.definition
+      });
+      addErrorRecord(q.word, q.definition, q.sentence);
+    }
+  });
+
+  const score = correct * 10;
+  const totalEl = document.getElementById('totalResultArea');
+  totalEl.style.display = 'block';
+  let html = `
+    <p class="total-result">Total Result: ${correct}/${batchQuestions.length} Correct <span class="score-text">(Score: ${score}/100)</span></p>
+  `;
+
+  if (wrongWordsThisSet.length > 0) {
+    html += `<div class="wrong-words-summary">`;
+    html += `<p><strong>Words you got wrong in this set:</strong></p>`;
+    wrongWordsThisSet.forEach(item => {
+      html += `
+        <div class="wrong-word-item">
+          <span class="wrong-word">${item.word}</span> — ${item.definition}
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  totalEl.innerHTML = html;
+  // 提交后更新数据
+  renderTodayErrorBook();
+  renderHistoryErrorBook();
+  renderTestedWords();
+});
+
+// 已考过单词按钮逻辑
+document.getElementById('showTestedWordsBtn').addEventListener('click', function() {
+  // 重置UI状态，只聚焦已考过单词
+  resetUIState();
+  // 标记当前激活的按钮
+  this.classList.add('active');
+  
+  const testedWordsCard = document.getElementById('testedWordsContainer');
+  testedWordsCard.style.display = 'block';
+  testedWordsCard.scrollIntoView({behavior: 'smooth'});
+  // 隐藏答题提交按钮（查看单词时不需要答题功能）
+  document.getElementById('submitAllBtn').style.display = 'none';
+});
+
+// 错题本按钮逻辑（控制独立卡片的显示/隐藏）
+document.getElementById('showErrorBookBtn').addEventListener('click', function() {
+  // 重置UI状态，只聚焦错题本
+  resetUIState();
+  // 标记当前激活的按钮
+  this.classList.add('active');
+  
+  const errorBookCard = document.getElementById('errorBookContainer');
+  errorBookCard.style.display = 'block';
+  errorBookCard.scrollIntoView({behavior: 'smooth'});
+  // 隐藏答题提交按钮（查看错题时不需要答题功能）
+  document.getElementById('submitAllBtn').style.display = 'none';
+});
+
+// 绑定导出XLS按钮事件
+document.getElementById('exportTestedWordsBtn').addEventListener('click', exportTestedWordsToXLS);
+
+// 标签切换逻辑
+document.querySelectorAll('.error-book-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.error-book-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const name = tab.dataset.tab;
+    document.querySelectorAll('.error-book-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`${name}ErrorBook`).classList.add('active');
+  });
+});
+
+// 清空所有错题
+document.getElementById('clearErrorBtn').onclick = () => {
+  if (confirm('Clear ALL errors?')) {
+    errorRecords = [];
+    saveErrorRecords();
+    // 清空后刷新错题本显示
+    renderTodayErrorBook();
+    renderHistoryErrorBook();
+  }
+};
+
+// 清空历史错题
+document.getElementById('clearHistoryBtn').onclick = () => {
+  if (confirm('Clear only history errors?')) {
+    errorRecords = errorRecords.filter(r => r.date === TODAY);
+    saveErrorRecords();
+    // 清空后刷新错题本显示
+    renderTodayErrorBook();
+    renderHistoryErrorBook();
+  }
+};
+
+// SAT单词库
+const satWordBank = [
+  {
+    word: "abate",
+    definition: "to become less intense or widespread; to reduce in degree or intensity",
+    sentence: "The storm began to ______ after several hours of heavy rain.",
+    distractors: ["diminish", "wane", "subside"]
+  },
+  {
+    word: "ephemeral",
+    definition: "lasting for a very short time; transient, fleeting",
+    sentence: "The beauty of cherry blossoms is ______ and should be cherished.",
+    distractors: ["transient", "fleeting", "evanescent"]
+  },
+  {
+    word: "diligent",
+    definition: "having or showing care and conscientiousness in one's work or duties; hardworking",
+    sentence: "A ______ student will always review notes before exams.",
+    distractors: ["industrious", "assiduous", "sedulous"]
+  },
+  {
+    word: "ambiguous",
+    definition: "open to more than one interpretation; unclear or vague in meaning",
+    sentence: "The politician's statement was ______, leaving voters confused.",
+    distractors: ["vague", "equivocal", "ambivalent"]
+  },
+  {
+    word: "arbitrary",
+    definition: "based on random choice or personal whim, rather than reason or system",
+    sentence: "The teacher refused to make ______ decisions about grading.",
+    distractors: ["capricious", "whimsical", "random"]
+  },
+  {
+    word: "conscientious",
+    definition: "wishing to do one's work or duty well and thoroughly",
+    sentence: "She is a ______ worker who checks every detail twice.",
+    distractors: ["meticulous", "diligent", "scrupulous"]
+  },
+  {
+    word: "elusive",
+    definition: "difficult to find, catch, or achieve; hard to understand or define",
+    sentence: "The answer to the math problem remained ______ even after hours of trying.",
+    distractors: ["evasive", "intangible", "illusive"]
+  },
+  {
+    word: "frugal",
+    definition: "sparing or economical with regard to money or food; not wasteful",
+    sentence: "A ______ person avoids unnecessary expenses and saves money.",
+    distractors: ["thrifty", "economical", "prudent"]
+  },
+  {
+    word: "gregarious",
+    definition: "fond of company; sociable; living in flocks or herds",
+    sentence: "Unlike his shy sister, he is a ______ boy who loves parties.",
+    distractors: ["sociable", "convivial", "outgoing"]
+  },
+  {
+    word: "meticulous",
+    definition: "showing great attention to detail; very careful and precise",
+    sentence: "The surgeon must be ______ to avoid mistakes during operations.",
+    distractors: ["scrupulous", "fastidious", "precise"]
+  },
+  {
+    word: "notorious",
+    definition: "famous or well known for some bad quality or deed",
+    sentence: "The ______ thief was finally caught by the police.",
+    distractors: ["infamous", "noted", "renowned"]
+  },
+  {
+    word: "perseverance",
+    definition: "persistence in doing something despite difficulty or delay in achieving success",
+    sentence: "Success requires hard work and ______, not just talent.",
+    distractors: ["persistence", "tenacity", "resilience"]
+  },
+  {
+    word: "quintessential",
+    definition: "representing the most perfect or typical example of a quality or class",
+    sentence: "Her style is the ______ example of modern minimalism.",
+    distractors: ["archetypal", "typical", "paradigmatic"]
+  },
+  {
+    word: "resilient",
+    definition: "able to withstand or recover quickly from difficult conditions",
+    sentence: "A ______ person can bounce back from failure without giving up.",
+    distractors: ["robust", "tough", "sturdy"]
+  },
+  {
+    word: "tenacious",
+    definition: "tending to keep a firm hold of something; clinging or adhering closely",
+    sentence: "He is a ______ competitor who never gives up until the end.",
+    distractors: ["persistent", "stubborn", "resolute"]
+  }
+];
+
+// 初始化加载所有数据
+loadAllData();
+</script>
+</body>
+</html>
