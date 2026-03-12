@@ -1,7 +1,0 @@
-
-body{font-family:Arial;margin:0;background:#f2f4f8}
-.container{padding:20px}
-.login-overlay{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center}
-.login-box{background:white;padding:30px;border-radius:10px;width:260px}
-.login-box input{width:100%;margin-bottom:10px;padding:8px}
-.err{color:red;font-size:12px}
