@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAT Practice</title>
+<link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+<body>
+
+<div id="loginOverlay" class="login-overlay">
+  <div class="login-box">
+    <h2>Login</h2>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Enter</button>
+    <div id="loginError" class="err"></div>
+  </div>
+</div>
+
+<div class="container">
+<h1>SAT Vocabulary Practice</h1>
+<div id="stats">Total Words: <span id="totalWords">0</span></div>
+<button onclick="generate()">Generate 10 Words</button>
+<div id="wordList"></div>
+</div>
+
+<script src="./assets/js/login.js"></script>
+<script src="./assets/js/app.js"></script>
+
+</body>
+</html>
